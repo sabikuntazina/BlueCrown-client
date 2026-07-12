@@ -31,6 +31,14 @@ export default function RegisterForm() {
 
     if (user?.password !== user?.confirmPassword) {
       return toast.error("Passwords do not match!");
+      
+    }
+    let credit;
+    if(user?.role=="supporter"){
+      credit=50;
+    }
+    else if(user?.role=="creator"){
+      credit=20;
     }
 
     try {
@@ -39,7 +47,8 @@ export default function RegisterForm() {
         password: user.password,
         name: user.name,
         image: user.image || "", 
-      role: user?.role
+      role: user?.role,
+      credit:credit,
       });
 
       // console.log("Response Data:", data);
@@ -51,7 +60,7 @@ export default function RegisterForm() {
 
       if (data) {
         toast.success("Registration Successful");
-        router.push("/login");
+        router.push("/");
       }
     } catch (err) {
       console.error("Catch Block Error:", err);

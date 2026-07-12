@@ -9,13 +9,17 @@ import UserMenu from "./UserMenu";
 import NavLinks from "./NavLinks";
 import Logo from "./Logo";
 import { authClient } from "@/lib/auth-client";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
  const { data: session } = authClient.useSession();
- 
+ const user= session?.user
+
+
+
  
  const handleSignOut = async () => {
     await authClient.signOut({
@@ -37,6 +41,11 @@ export default function Navbar() {
     return () =>
       window.removeEventListener("scroll", handleScroll);
   }, []);
+
+    const pathname = usePathname()
+   if (pathname.includes('dashboard')) {
+    return null
+  }
 
   return (
     <header
@@ -62,14 +71,17 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
 
           {/* Credits */}
-
-          <div className="hidden md:flex items-center gap-2 rounded-full bg-[#EEF8F1] px-4 py-2">
+          {
+            user &&   <div className="hidden md:flex items-center gap-2 rounded-full bg-[#EEF8F1] px-4 py-2">
             <span className="text-lg">🌿</span>
 
             <span className="text-sm font-semibold text-[#4F8A6A]">
-              240 Credits
+             {user?.credit}
             </span>
           </div>
+          }
+
+        
 
           {/* Notification */}
 

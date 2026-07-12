@@ -62,7 +62,7 @@ export default function UserMenu({ session , handleSignOut}) {
               {user.name}
             </h4>
 
-            <p className="text-xs text-gray-500">Supporter</p>
+            <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
 
           <FiChevronDown />
@@ -74,25 +74,19 @@ export default function UserMenu({ session , handleSignOut}) {
         className="dropdown-content mt-3 w-64 rounded-2xl border border-[#ECE7DE] bg-white p-3 shadow-xl"
       >
         <li>
-          <a className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#EDF8F1]">
+          <Link href={`/dashboard/${user?.role}`} className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#EDF8F1]">
             <FiGrid />
             Dashboard
-          </a>
+          </Link>
         </li>
 
         <li>
-          <a className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#EDF8F1]">
+          <Link href={'/profile'} className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#EDF8F1]">
             <FiUser />
             Profile
-          </a>
+          </Link>
         </li>
 
-        <li>
-          <a className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#EDF8F1]">
-            <FiSettings />
-            Settings
-          </a>
-        </li>
 
         <div className="my-2 border-t border-[#ECE7DE]" />
 

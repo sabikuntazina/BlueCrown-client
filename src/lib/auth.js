@@ -20,6 +20,12 @@ export const auth = betterAuth({
         type: "string",
         defaultValue: "supporter", 
       },
+      credit: {
+        type: "number", // সংখ্যা সেভ করার জন্য টাইপ number
+        required: false,
+        defaultValue: 0,
+        input: true, // ফ্রন্টএন্ড থেকে ইনপুট নেওয়ার জন্য
+      },
         //  plan:{
         //         default: "seeker_free"
         //     }

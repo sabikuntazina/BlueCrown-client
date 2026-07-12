@@ -8,3 +8,13 @@
   --color-base-100: #FFF9F2;   /* Warm Ivory Background */
   --color-base-200: #FFFFFF;   /* Cards/Dropdowns White */
 }
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}

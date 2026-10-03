@@ -16,16 +16,37 @@ import {
   HiMiniCalendarDays,
 } from "react-icons/hi2";
 import { toast } from "react-toastify";
-import { postCampaign } from "@/lib/post-apis/creator/add-campaign";
+import { authClient } from "@/lib/auth-client";
+
+// --- API Helper Function (ভুল ঠিক করা হয়েছে) ---
+const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+const postCampaign = async (campaignData) => {
+  const res = await fetch(`${baseUrl}/api/add/campaigns`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(campaignData),
+  });
+  const data = await res.json();
+  return data;
+};
 
 export default function AddCampaignPage() {
-  // --- 1. State Declarations (Sobcheye upore thakte hobe) ---
+  // --- 1. State Declarations ---
   const [image, setImage] = useState(null);
   const [customFields, setCustomFields] = useState([]);
   const [customField, setCustomField] = useState({
     key: "",
     value: "",
   });
+
+  const [loading, setLoading] = useState(false);
+
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  console.log(user)
 
   const reservedFields = [
     "campaignTitle",
@@ -53,14 +74,14 @@ export default function AddCampaignPage() {
       .join("");
   };
 
-  const addMoreFieldFunction = async () => {
+  const addMoreFieldFunction = () => {
     if (!customField.key.trim() || !customField.value.trim()) return;
 
     const key = toCamelCase(customField.key);
 
     // Reserved Check
     if (reservedFields.includes(key)) {
-      alert("This field name is reserved.");
+      toast.error("This field name is reserved.");
       return;
     }
 
@@ -104,13 +125,19 @@ export default function AddCampaignPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-
+    try {
       const formData = new FormData(e.currentTarget);
       const campaign = Object.fromEntries(formData.entries());
 
-      // Upload image
+      // Upload image & error handling
       const imageUrl = await uploadImageToImgBB();
+      if (!imageUrl) {
+        toast.error("Please upload a campaign cover image.");
+        setLoading(false);
+        return;
+      }
       campaign.campaignImage = imageUrl;
 
       // number convert
@@ -122,18 +149,29 @@ export default function AddCampaignPage() {
         campaign[field.key] = field.value;
       });
 
-      console.log(campaign);
+      campaign.creatorId = user?.id;
+      campaign.creatorName = user?.name;
+      campaign.creatorImage = user?.image;
+      campaign.creatorRole = user?.role;
+      campaign.status="pending"
 
-  
-    const res = await postCampaign(campaign);
+      const res = await postCampaign(campaign);
 
-    if (res?.insertedId || res?.acknowledged) {
-      toast.success("Campaign Ready ✔");
-      e.target.reset();
-    } else {
-      toast.error("Something went wrong.");
+      if (res?.insertedId || res?.acknowledged) {
+        toast.success("Campaign Ready ✔");
+        e.target.reset();
+        // রিঅ্যাক্ট স্টেট ক্লিয়ার করা হয়েছে
+        setImage(null);
+        setCustomFields([]);
+      } else {
+        toast.error("Something went wrong on the server.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to submit campaign.");
+    } finally {
+      setLoading(false);
     }
-     
   };
 
   // --- 3. UI Template Return ---
@@ -216,13 +254,13 @@ export default function AddCampaignPage() {
                     className="h-12 w-full rounded-xl border border-[#ECE7DE] bg-white pl-12 pr-4 outline-none transition focus:border-[#4F8A6A]"
                   >
                     <option value="">Select Category</option>
-                    <option>Technology</option>
-                    <option>Health</option>
-                    <option>Education</option>
-                    <option>Community</option>
-                    <option>Art</option>
-                    <option>Environment</option>
-                    <option>Business</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Health">Health</option>
+                    <option value="Education">Education</option>
+                    <option value="Community">Community</option>
+                    <option value="Art">Art</option>
+                    <option value="Environment">Environment</option>
+                    <option value="Business">Business</option>
                   </select>
                 </div>
               </div>
@@ -375,7 +413,7 @@ export default function AddCampaignPage() {
 
               <button
                 type="button"
-                onClick={() => addMoreFieldFunction()}
+                onClick={addMoreFieldFunction}
                 className="btn border-none bg-[#4F8A6A] text-white hover:bg-[#3E7258]"
               >
                 <FaPlus />
@@ -420,7 +458,7 @@ export default function AddCampaignPage() {
                   >
                     <div>
                       <p className="font-semibold text-[#244034]">
-                        {field.key}
+                        {field.key} ({field.label})
                       </p>
                       <p className="text-sm text-gray-500">{field.value}</p>
                     </div>
@@ -445,9 +483,10 @@ export default function AddCampaignPage() {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="rounded-xl bg-[#4F8A6A] px-10 py-4 font-semibold text-white transition w-full hover:bg-[#3E7258]"
+              disabled={loading}
+              className="rounded-xl bg-[#4F8A6A] px-10 py-4 font-semibold text-white transition w-full hover:bg-[#3E7258] disabled:bg-gray-400"
             >
-              Publish Campaign
+              {loading ? "Publishing..." : "Publish Campaign"}
             </button>
           </div>
         </form>

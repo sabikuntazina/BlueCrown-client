@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL||5000;
 
 export const postCampaign = async (campaignData) => {
   const res = await fetch(`${baseUrl}/api/add/campaigns`, {
